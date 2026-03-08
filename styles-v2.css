@@ -65,16 +65,13 @@ body {
     display: flex;
     align-items: center;
     padding-left: 0;
-    margin-left: -20px;
+    margin-left: 0;
 }
 
 .dashboard-header .logo img {
-    height: 180px;
+    height: 50px;
     width: auto;
-    max-width: none;
     display: block;
-    margin-top: -50px;
-    margin-bottom: -50px;
 }
 
 .dashboard-header .header-title {
