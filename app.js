@@ -383,13 +383,15 @@ function renderVisualResults(data) {
     data.cuotas.forEach(c => {
         cuotasHtml += `
             <div class="cuota-card ${c.sinInteres ? 'highlight' : ''}">
-                <div class="cuota-label">
-                    <i class="fa-solid ${c.uf ? 'fa-chart-line' : 'fa-calendar'}"></i>
+                <div class="cuota-label" style="font-weight: 600; color: var(--text-main);">
+                    <i class="fa-solid ${c.uf ? 'fa-chart-line' : 'fa-calendar'}" style="color: var(--primary); opacity: 0.8;"></i>
                     ${c.meses} Meses ${c.uf ? '(UF)' : ''}
                 </div>
-                <div class="cuota-monto">$${c.valor}</div>
-                <div style="font-size: 11px; opacity: 0.6;">
+                <div class="cuota-monto" style="font-family: var(--font-heading); margin: 4px 0;">$${c.valor}</div>
+                <div>
+                   <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 8px; border-radius: 6px; background: ${c.sinInteres ? 'var(--primary)' : 'var(--secondary)'}; color: white; display: inline-block;">
                     ${c.sinInteres ? 'UF' : 'Crédito Directo'}
+                   </span>
                 </div>
             </div>
         `;
@@ -408,16 +410,17 @@ function renderVisualResults(data) {
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Valor Lista</span>
-                    <span class="stat-value">$${data.precio}</span>
+                    <span class="stat-value" style="color: var(--text-main);">$${data.precio}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Pie</span>
-                    <span class="stat-value">$${data.pie}</span>
+                    <span class="stat-label">Pie Inicial</span>
+                    <span class="stat-value" style="color: var(--text-main);">$${data.pie}</span>
                 </div>
             </div>
             
-            <div style="margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
-                Opciones de Financiamiento:
+            <div style="margin-bottom: 20px; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i>
+                Opciones de Financiamiento
             </div>
             <div class="cuotas-comparison-grid">
                 ${cuotasHtml}
@@ -482,15 +485,19 @@ function switchAdminTab(tab) {
 
 function closeAuthOverlay() {
     document.getElementById('authOverlay').classList.remove('active');
-    document.body.style.overflow = '';
+    document.body.style.overflow = 'auto'; // Forzamos auto en lugar de vacío para asegurar en móviles
+    document.documentElement.style.overflow = 'auto';
 }
 
-const resArea = document.getElementById('resultado');
-if (resArea) {
-    resArea.addEventListener('copy', e => e.preventDefault());
-    resArea.addEventListener('cut', e => e.preventDefault());
-    resArea.addEventListener('contextmenu', e => e.preventDefault());
-}
+const protectAreas = ['resultado', 'visual-results'];
+protectAreas.forEach(id => {
+    const area = document.getElementById(id);
+    if (area) {
+        area.addEventListener('copy', e => e.preventDefault());
+        area.addEventListener('cut', e => e.preventDefault());
+        area.addEventListener('contextmenu', e => e.preventDefault());
+    }
+});
 
 function limitarCuotas(checkbox) {
     if (document.querySelectorAll('input[name="cuota-opcion"]:checked').length > 3) {

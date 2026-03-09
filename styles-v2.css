@@ -26,8 +26,8 @@
 }
 
 body.dark-mode {
-    --primary: #EF4444;
-    /* Rojo profesional (Tailwind-like) */
+    --primary: #10B981;
+    /* Verde Esmeralda profesional */
     --secondary: #1E293B;
     --accent: #38BDF8;
     --background: #0F172A;
@@ -41,9 +41,9 @@ body.dark-mode {
     /* Slate-400 */
     --border: #334155;
     /* Slate-700 */
-    --border-focus: #EF4444;
+    --border-focus: #10B981;
     --panel-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    background-image: radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.05) 0%, transparent 40%),
+    background-image: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
         radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
 }
 
@@ -57,15 +57,25 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 100vh;
+    min-height: 100%;
+    /* Cambiado de 100vh para mejor compatibilidad móvil */
     margin: 0;
-    padding: 40px 24px;
+    padding: 24px;
+    /* Ajustado el padding para móviles */
     box-sizing: border-box;
     transition: background-color 0.5s ease, color 0.5s ease;
+    overflow-x: hidden;
+    /* Evitar scroll horizontal accidental */
+}
+
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body.dark-mode {
-    background-image: radial-gradient(circle at 10% 20%, rgba(255, 45, 85, 0.05) 0%, transparent 40%),
+    background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
         linear-gradient(180deg, #09090B 0%, #000000 100%);
 }
@@ -135,12 +145,16 @@ body.dark-mode {
 
 .panel {
     background: var(--surface);
-    padding: 32px;
+    padding: 32px 32px 32px 32px;
+    /* Reducido de 48px para compactar */
     border-radius: 16px;
     box-shadow: var(--panel-shadow);
     border: 1px solid var(--border);
     box-sizing: border-box;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 body.dark-mode .panel {
@@ -215,7 +229,7 @@ button {
     margin-top: 8px;
     margin-bottom: 20px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(26, 57, 42, 0.15);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
 }
 
 button:active {
@@ -230,8 +244,8 @@ button:hover {
 }
 
 body.dark-mode button {
-    background: linear-gradient(135deg, #EF4444, #DC2626);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, var(--primary), #059669);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
     color: white;
     font-weight: 600;
 }
@@ -305,7 +319,9 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     margin-top: auto;
-    padding-top: 10px;
+    /* Mantiene alineación al fondo */
+    padding-top: 20px;
+    /* Reducido para juntar más los datos con el botón */
 }
 
 .error {
@@ -773,10 +789,15 @@ body.dark-mode .reports-table th {
     z-index: 9999;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    /* Alineado arriba para facilitar scroll */
+    padding: 20px;
     opacity: 0;
     visibility: hidden;
     transition: all 0.4s ease;
+    overflow-y: auto;
+    /* Permitir scroll si el modal es muy alto */
+    -webkit-overflow-scrolling: touch;
 }
 
 .auth-overlay.active {
@@ -958,6 +979,10 @@ body.dark-mode .admin-tab.active {
     flex-direction: column;
     gap: 20px;
     animation: slideUp 0.4s ease;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
 }
 
 .empty-results-state {
@@ -971,63 +996,84 @@ body.dark-mode .admin-tab.active {
 }
 
 .result-card {
-    background: rgba(15, 23, 42, 0.4);
+    background: var(--surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--panel-shadow);
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .result-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .result-header-box {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
 }
 
 .stat-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .stat-label {
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     color: var(--text-muted);
+    font-weight: 600;
 }
 
 .stat-value {
-    font-size: 18px;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--primary);
 }
 
 .cuotas-comparison-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
 }
 
 .cuota-card {
-    background: linear-gradient(135deg, var(--surface), rgba(30, 41, 59, 1));
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 16px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: transform 0.2s ease;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .cuota-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
     border-color: var(--primary);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.1);
 }
 
 .cuota-card.highlight {
+    border: 2px solid var(--primary);
+    background: linear-gradient(135deg, var(--surface), rgba(26, 57, 42, 0.05));
+}
+
+body.dark-mode .cuota-card.highlight {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(239, 68, 68, 0.05));
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), var(--surface));
 }
 
 .cuota-monto {

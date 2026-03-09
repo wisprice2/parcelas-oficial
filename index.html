@@ -310,11 +310,11 @@
                     <div id="cuotas-container" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
                 </div>
 
-                <div class="panel-actions-container" style="margin-top: auto; padding-top: 20px;">
+                <div id="error-msg" class="error" style="margin-top: 10px; min-height: 20px;"></div>
+                <div class="panel-actions-container">
                     <button class="btn-save" onclick="generarSimulacion()" style="width: 100%;">
                         <div class="btn-content"><i class="fa-solid fa-play"></i> Generar Cotización</div>
                     </button>
-                    <div id="error-msg" class="error" style="margin-top: 10px; min-height: 20px;"></div>
                 </div>
             </div>
 
@@ -336,7 +336,7 @@
                 <!-- Resumen en Texto (Oculto por defecto, usado para el Portapapeles) -->
                 <textarea id="resultado" readonly style="display: none;"></textarea>
 
-                <div class="panel-actions-container" style="margin-top: 24px;">
+                <div class="panel-actions-container">
                     <button class="btn-secondary" onclick="descargarPDF()" style="width: 100%;">
                         <i class="fa-solid fa-file-pdf"></i> Descargar PDF
                     </button>
