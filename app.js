@@ -163,19 +163,26 @@ function mostrarOpcionesCuotas() {
 
     let htmlCheckboxes = '';
     cuotasOfrecidas.forEach((cant, idx) => {
-        const checkedStr = idx < 3 ? 'checked' : '';
+        const isSelected = idx < 3;
+        const checkedStr = isSelected ? 'checked' : '';
+        const activeClass = isSelected ? 'selected' : '';
         htmlCheckboxes += `
-        <label style="font-size:13px; font-weight:normal; margin:0; display:flex; align-items:center; gap:4px; padding: 4px 8px; background: #f1f5f9; border-radius: 4px; cursor: pointer;">
-            <input type="checkbox" name="cuota-opcion" value="${cant}" ${checkedStr} onchange="limitarCuotas(this)"> ${cant} Meses
+        <label class="cuota-btn-mini ${activeClass}">
+            <input type="checkbox" name="cuota-opcion" value="${cant}" ${checkedStr} onchange="toggleMiniButtonStyle(this)">
+            <span>${cant} Meses</span>
         </label>`;
     });
 
     htmlCheckboxes += `
-        <div style="display:flex; align-items:center; gap:8px; margin-left:8px; border-left:1px solid #cbd5e1; padding-left:12px;">
-            <input type="number" id="custom-meses" min="1" max="120" placeholder="Ej: 3" style="width: 70px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;">
-            <span style="font-size:13px; color:var(--text-main);">Meses</span>
-            <input type="number" id="custom-meses-uf" min="1" max="120" placeholder="Ej: 6" style="width: 70px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; margin-left:8px;">
-            <span style="font-size:13px; color:var(--text-main);">Meses UF</span>
+        <div style="display:flex; align-items:center; gap:8px; margin-left:8px; border-left:1.5px solid var(--border); padding-left:16px;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">Meses</label>
+                <input type="number" id="custom-meses" min="1" max="120" placeholder="Ej: 3" style="width: 75px; padding: 8px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: rgba(255,255,255,0.05); color:var(--text-main);">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">Meses UF</label>
+                <input type="number" id="custom-meses-uf" min="1" max="120" placeholder="Ej: 6" style="width: 75px; padding: 8px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: rgba(255,255,255,0.05); color:var(--text-main);">
+            </div>
         </div>
     `;
 
@@ -261,6 +268,21 @@ function generarSimulacion() {
 
     const texto = `*${proyectoSeleccionado}* – Parcela ${parcelaKey}\n📐 ${p.m2} m²\n💰 Valor Lista: $${p.precio}\n💵 Pago Contado: $${precioFinalContado}\n\nPie: $${pieFinal}\n\nSaldo financiado:\n${cuotasTexto.trim()}`;
     resultado.value = texto;
+
+    // Renderizar Dashboard Visual
+    renderVisualResults({
+        proyecto: proyectoSeleccionado,
+        parcela: parcelaKey,
+        m2: p.m2,
+        precio: p.precio,
+        contado: precioFinalContado,
+        pie: pieFinal,
+        cuotas: opcionesCuotas.map(o => {
+            let esSinInteres = o.uf || o.m <= maxSinInteres;
+            let v = esSinInteres ? (saldoParaFinanciar / o.m) : calcularCuotaNormal(saldoParaFinanciar, o.m, getTasaInteres(proyectoSeleccionado));
+            return { meses: o.m, valor: formatMoney(v), uf: o.uf, sinInteres: esSinInteres };
+        })
+    });
 
     lastSimulationData = {
         user_type: currentUserType,
@@ -353,6 +375,57 @@ function loadAdminData() {
     emptyState.style.display = 'none';
 }
 
+function renderVisualResults(data) {
+    const container = document.getElementById('visual-results');
+    if (!container) return;
+
+    let cuotasHtml = '';
+    data.cuotas.forEach(c => {
+        cuotasHtml += `
+            <div class="cuota-card ${c.sinInteres ? 'highlight' : ''}">
+                <div class="cuota-label">
+                    <i class="fa-solid ${c.uf ? 'fa-chart-line' : 'fa-calendar'}"></i>
+                    ${c.meses} Meses ${c.uf ? '(UF)' : ''}
+                </div>
+                <div class="cuota-monto">$${c.valor}</div>
+                <div style="font-size: 11px; opacity: 0.6;">
+                    ${c.sinInteres ? 'UF' : 'Crédito Directo'}
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="result-card">
+            <div class="result-header-box">
+                <div class="stat-item">
+                    <span class="stat-label">Proyecto</span>
+                    <span class="stat-value">${data.proyecto}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Parcela</span>
+                    <span class="stat-value">${data.parcela}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Valor Lista</span>
+                    <span class="stat-value">$${data.precio}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pie</span>
+                    <span class="stat-value">$${data.pie}</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
+                Opciones de Financiamiento:
+            </div>
+            <div class="cuotas-comparison-grid">
+                ${cuotasHtml}
+            </div>
+        </div>
+    `;
+}
+
 function saveAdminData() {
     const proj = document.getElementById('admin-proyecto').value;
     const parc = document.getElementById('admin-parcela').value;
@@ -412,21 +485,65 @@ function closeAuthOverlay() {
     document.body.style.overflow = '';
 }
 
-function copiarTexto() {
-    const text = document.getElementById('resultado');
-    if (!text.value) return;
-    text.select();
-    document.execCommand('copy');
-    const btn = document.getElementById('btn-copy');
-    const oldTxt = btn.innerText;
-    btn.innerText = '¡Copiado!';
-    btn.classList.add('success-state');
-    setTimeout(() => { btn.innerText = oldTxt; btn.classList.remove('success-state'); }, 2500);
+const resArea = document.getElementById('resultado');
+if (resArea) {
+    resArea.addEventListener('copy', e => e.preventDefault());
+    resArea.addEventListener('cut', e => e.preventDefault());
+    resArea.addEventListener('contextmenu', e => e.preventDefault());
 }
 
 function limitarCuotas(checkbox) {
     if (document.querySelectorAll('input[name="cuota-opcion"]:checked').length > 3) {
         checkbox.checked = false;
+        checkbox.closest('.cuota-btn-mini')?.classList.remove('selected');
         alert("Máximo 3 opciones.");
+        return false;
+    }
+    return true;
+}
+
+function toggleMiniButtonStyle(checkbox) {
+    if (checkbox.checked) {
+        if (!limitarCuotas(checkbox)) return;
+        checkbox.closest('.cuota-btn-mini').classList.add('selected');
+    } else {
+        checkbox.closest('.cuota-btn-mini').classList.remove('selected');
     }
 }
+
+// --- SISTEMA DE TEMAS (DARK MODE) ---
+function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('btn-theme-toggle');
+    const isDark = body.classList.toggle('dark-mode');
+
+    // Guardar preferencia
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+    // Actualizar icono y logos
+    if (btn) {
+        btn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    }
+
+    const logos = document.querySelectorAll('.theme-logo');
+    logos.forEach(img => {
+        img.src = isDark ? 'logo-white.png' : 'logo.png';
+    });
+}
+
+// Inicializar tema al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    const btn = document.getElementById('btn-theme-toggle');
+
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+
+        // Cargar logos oscuros al inicio
+        const logos = document.querySelectorAll('.theme-logo');
+        logos.forEach(img => {
+            img.src = 'logo-white.png';
+        });
+    }
+});

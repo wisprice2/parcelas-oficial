@@ -1,7 +1,17 @@
-// Configuración de Supabase
+// Configuración de Supabase - Mapeo de configuración centralizado
+// En un entorno de producción real con Next.js, esto se leería de process.env
 const SUPABASE_URL = 'https://wrwixrkvxuxlzlbmqcnm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indyd2l4cmt2eHV4bHpsYm1xY25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjYyMTAsImV4cCI6MjA4ODI0MjIxMH0.Obq02KaBRQuyJ5voJLnG5Ce8JK6jJizvfnmLHq1_KHU';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Capa de abstracción para la inicialización
+const getSupabaseClient = () => {
+    if (typeof window !== 'undefined' && window.supabase) {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+};
+
+const supabaseClient = getSupabaseClient();
 
 let currentUserType = 'Partner'; // Por defecto
 let currentFullAsesorName = '';
@@ -104,8 +114,13 @@ async function cargarReportes() {
     const fUser = document.getElementById('filter-user').value.trim().toLowerCase();
     const fType = document.getElementById('filter-type').value;
     const fProj = document.getElementById('filter-project').value;
+    const btnDelMulti = document.getElementById('btn-delete-multi');
+    const checkAll = document.getElementById('check-all-reports');
 
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando historial...</td></tr>';
+    if (btnDelMulti) btnDelMulti.style.display = 'none';
+    if (checkAll) checkAll.checked = false;
+
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px;">Cargando historial...</td></tr>';
 
     try {
         let query = supabaseClient.from('quotes_history').select('*').order('created_at', { ascending: false });
@@ -117,26 +132,26 @@ async function cargarReportes() {
 
         if (error) throw error;
 
-        // Filtro por nombre de usuario (en memoria para mayor flexibilidad con ilike si no es exacto)
         const filteredData = data.filter(r => {
             const matchUser = fUser === '' || (r.asesor_name || '').toLowerCase().includes(fUser);
             return matchUser;
         });
 
         if (filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No se encontraron registros.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px;">No se encontraron registros.</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
-        window.lastReportData = filteredData; // Store globally for export
+        window.lastReportData = filteredData;
 
         filteredData.forEach(r => {
             const fecha = new Date(r.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             const tr = document.createElement('tr');
 
             let deleteIcon = '';
-            if (currentAuthUser && currentAuthUser.toLowerCase() === 'admin') {
+            // Permitir borrar si es admin o si el registro es suyo (simple check)
+            if (currentAuthUser && (currentAuthUser.toLowerCase() === 'admin' || r.asesor_name.toLowerCase() === currentFullAsesorName.toLowerCase())) {
                 deleteIcon = `
                     <button class="btn-mini-pdf" style="color:#ef4444; border-color:#fee2e2;" onclick="eliminarCotizacion('${r.id}')" title="Eliminar">
                         <i class="fa-solid fa-trash"></i>
@@ -145,6 +160,7 @@ async function cargarReportes() {
             }
 
             tr.innerHTML = `
+                <td><input type="checkbox" class="report-check" value="${r.id}" onclick="updateMultiDeleteBtn()"></td>
                 <td>${fecha}</td>
                 <td><span class="badge-type badge-${r.user_type.toLowerCase()}">${r.user_type}</span><br>${r.asesor_name}</td>
                 <td>${r.client_name}</td>
@@ -162,7 +178,58 @@ async function cargarReportes() {
 
     } catch (e) {
         console.error("Error cargando reportes:", e);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red; padding:20px;">Error al cargar datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:red; padding:20px;">Error al cargar datos.</td></tr>';
+    }
+}
+
+// 7. Funciones de eliminación
+async function eliminarCotizacion(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este reporte?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('quotes_history')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        cargarReportes();
+    } catch (e) {
+        console.error("Error eliminando:", e);
+        alert("No se pudo eliminar el reporte.");
+    }
+}
+
+function toggleAllReports(master) {
+    const checks = document.querySelectorAll('.report-check');
+    checks.forEach(c => c.checked = master.checked);
+    updateMultiDeleteBtn();
+}
+
+function updateMultiDeleteBtn() {
+    const btn = document.getElementById('btn-delete-multi');
+    const checkedCount = document.querySelectorAll('.report-check:checked').length;
+    if (btn) btn.style.display = checkedCount > 0 ? 'block' : 'none';
+}
+
+async function eliminarSeleccionados() {
+    const checks = document.querySelectorAll('.report-check:checked');
+    const ids = Array.from(checks).map(c => c.value);
+
+    if (ids.length === 0) return;
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${ids.length} reportes seleccionados?`)) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('quotes_history')
+            .delete()
+            .in('id', ids);
+
+        if (error) throw error;
+        cargarReportes();
+    } catch (e) {
+        console.error("Error en borrado masivo:", e);
+        alert("Error al intentar borrar múltiples reportes.");
     }
 }
 
@@ -262,7 +329,7 @@ async function attemptLogin() {
 
     } catch (e) {
         console.error("Login Exception", e);
-        err.textContent = "Error de conexión.";
+        err.textContent = "Error de conexión: " + e.message;
         err.style.display = 'block';
         btnSubmit.classList.remove('loading');
     }

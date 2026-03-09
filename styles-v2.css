@@ -1,5 +1,5 @@
 :root {
-    /* Colores basados en Soy Nativo */
+    /* Colores basados en Soy Nativo - Modo Claro */
     --primary: #1A392A;
     /* Verde bosque oscuro */
     --secondary: #2C5E43;
@@ -8,25 +8,51 @@
     /* Acento cálido dorado/arena */
     --background: #F8F9FA;
     /* Blanco humo */
-    --surface: #FFFFFF;
+    --surface: rgba(255, 255, 255, 0.85);
     --text-main: #2D3748;
     --text-muted: #718096;
-    --border: #E2E8F0;
+    --border: rgba(226, 232, 240, 0.6);
     --border-focus: #2C5E43;
     --error: #E53E3E;
     --success: #38A169;
     --btn-whatsapp: #25D366;
     --btn-whatsapp-hover: #1EBE5D;
+    --glass-blur: blur(15px);
+    --panel-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
     /* Tipografías */
     --font-heading: 'Montserrat', sans-serif;
     --font-body: 'Roboto', sans-serif;
 }
 
+body.dark-mode {
+    --primary: #EF4444;
+    /* Rojo profesional (Tailwind-like) */
+    --secondary: #1E293B;
+    --accent: #38BDF8;
+    --background: #0F172A;
+    /* Slate-900: Azul oscuro SaaS profundo */
+    --surface: #1E293B;
+    /* Slate-800: Superficie de panel */
+    --surface-glass: rgba(30, 41, 59, 0.7);
+    --text-main: #F1F5F9;
+    /* Slate-100 */
+    --text-muted: #94A3B8;
+    /* Slate-400 */
+    --border: #334155;
+    /* Slate-700 */
+    --border-focus: #EF4444;
+    --panel-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    background-image: radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+}
+
 body {
     font-family: var(--font-body);
     background-color: var(--background);
-    background-image: linear-gradient(135deg, #F8F9FA 0%, #E6ECE9 100%);
+    background-image: radial-gradient(circle at 0% 0%, rgba(26, 57, 42, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
     color: var(--text-main);
     display: flex;
     justify-content: center;
@@ -35,14 +61,23 @@ body {
     margin: 0;
     padding: 40px 24px;
     box-sizing: border-box;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+body.dark-mode {
+    background-image: radial-gradient(circle at 10% 20%, rgba(255, 45, 85, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+        linear-gradient(180deg, #09090B 0%, #000000 100%);
 }
 
 .dashboard-wrapper {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
+    /* Layout ancho profesional */
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
+    /* Mayor espaciado para que respire */
     margin: 0 auto;
 }
 
@@ -51,13 +86,15 @@ body {
     align-items: center;
     justify-content: space-between;
     background: var(--surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     padding: 0 32px;
     height: 80px;
     border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(26, 57, 42, 0.05);
+    box-shadow: var(--panel-shadow);
     animation: fadeIn 0.8s ease;
     box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border);
     overflow: hidden;
 }
 
@@ -69,7 +106,8 @@ body {
 }
 
 .dashboard-header .logo img {
-    height: 50px;
+    height: 70px;
+    /* Tamaño aumentado para mayor presencia visual */
     width: auto;
     display: block;
 }
@@ -77,28 +115,37 @@ body {
 .dashboard-header .header-title {
     font-family: var(--font-heading);
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--primary);
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    align-items: stretch;
+    grid-template-columns: 450px 1fr;
+    /* Más peso al panel de resultados */
+    gap: 32px;
+    animation: fadeIn 0.8s ease;
 }
 
 .panel {
     background: var(--surface);
     padding: 32px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(26, 57, 42, 0.08), 0 4px 10px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    box-shadow: var(--panel-shadow);
+    border: 1px solid var(--border);
     box-sizing: border-box;
-    animation: fadeIn 0.5s ease;
-    display: flex;
-    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .panel {
+    background: var(--surface);
+    border-color: #334155;
 }
 
 h2 {
@@ -123,16 +170,18 @@ label {
 }
 
 select,
-input[type="text"] {
+input[type="text"],
+input[type="password"],
+input[type="number"] {
     width: 100%;
-    padding: 14px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
     font-family: var(--font-body);
-    font-size: 16px;
+    font-size: 15px;
     color: var(--text-main);
-    background-color: #fcfcfc;
-    transition: all 0.2s ease;
+    background-color: var(--background);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
     appearance: none;
 }
@@ -180,6 +229,19 @@ button:hover {
     box-shadow: 0 6px 16px rgba(26, 57, 42, 0.2);
 }
 
+body.dark-mode button {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+    color: white;
+    font-weight: 600;
+}
+
+body.dark-mode button:hover {
+    background: linear-gradient(135deg, #DC2626, #B91C1C);
+    filter: none;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
 textarea {
     width: 100%;
     flex: 1;
@@ -207,6 +269,43 @@ textarea:focus {
     border-color: var(--border-focus);
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(44, 94, 67, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+#resultado {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    pointer-events: none;
+    /* Esto evita que el cursor entre o se pueda seleccionar */
+    cursor: default;
+}
+
+.btn-small {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 13px;
+    margin: 0;
+}
+
+.input-info-note {
+    font-size: 11px;
+    color: var(--secondary);
+    background: #ecfdf5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #d1fae5;
+}
+
+.panel-actions-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    padding-top: 10px;
 }
 
 .error {
@@ -242,8 +341,12 @@ textarea:focus {
     box-shadow: 0 6px 16px rgba(37, 211, 102, 0.3);
 }
 
-.success-state {
-    background-color: var(--success) !important;
+body.dark-mode #resultado {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+    /* Texto blanco en modo oscuro para legibilidad */
+    font-weight: 500;
 }
 
 @keyframes fadeIn {
@@ -336,13 +439,16 @@ textarea:focus {
 }
 
 .admin-modal {
-    background: rgba(255, 255, 255, 0.95);
-    width: 100%;
-    max-width: 500px;
+    background: var(--surface);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    width: 95%;
+    max-width: 1000px;
     max-height: 90vh;
     border-radius: 24px;
     padding: 32px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    box-shadow: var(--panel-shadow);
+    border: 1px solid var(--border);
     transform: translateY(20px) scale(0.95);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
@@ -351,6 +457,20 @@ textarea:focus {
     /* Scrollbar styling */
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
+}
+
+.auth-modal {
+    background: var(--surface);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 40px;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--panel-shadow);
+    border: 1px solid var(--border);
+    text-align: center;
+    animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .admin-modal::-webkit-scrollbar {
@@ -415,44 +535,150 @@ textarea:focus {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 20px;
+    align-items: end;
 }
 
-.cuotas-container {
-    background: #f8fafc;
-    border: 1px dashed var(--border);
+.cuotas-editor-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 24px;
-    transition: all 0.3s;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.reports-table th {
+    background-color: var(--background);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.dark-mode .reports-table th {
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .cuotas-header {
     font-size: 14px;
     font-weight: 600;
     color: var(--primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+
+/* --- Layout del Panel de Control Rediseñado --- */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.admin-sidebar {
+    background: #f8fafc;
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-main-content {
+    background: #ffffff;
+    min-height: 400px;
+}
+
+.bulk-update-box {
+    background: #f0fdf4;
+    border: 1px dashed #16a34a;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 8px 0;
+}
+
+.bulk-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #166534;
     margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
+.cuotas-editor-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.cuotas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.admin-actions-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #f1f5f9;
+}
+
+.admin-actions-footer .btn-save {
+    width: auto;
+    min-width: 250px;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
 .cuota-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.cuota-item:last-child {
-    margin-bottom: 0;
+    gap: 8px;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
 }
 
 .cuota-label {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-muted);
-    width: 40px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--primary);
+    width: 35px;
     flex-shrink: 0;
+}
+
+.admin-cuota-input {
+    border: none;
+    background: transparent;
+    padding: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.admin-cuota-input:focus {
+    outline: none;
 }
 
 .btn-save {
@@ -663,6 +889,38 @@ input[type="password"]:focus {
     }
 }
 
+/* Botones de Cuotas Minimalistas */
+.cuota-btn-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.cuota-btn-mini:hover {
+    border-color: var(--primary);
+    color: var(--text-main);
+}
+
+.cuota-btn-mini.selected {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white !important;
+}
+
+.cuota-btn-mini input[type="checkbox"] {
+    display: none;
+}
+
 /* --- Nuevos Estilos para Reportes --- */
 .admin-nav-tabs {
     display: flex;
@@ -685,7 +943,117 @@ input[type="password"]:focus {
 
 .admin-tab.active {
     color: var(--primary);
-    border-bottom-color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+}
+
+body.dark-mode .admin-tab.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    text-shadow: 0 0 10px rgba(255, 45, 85, 0.4);
+}
+
+/* Dashboard de Resultados Visuales */
+.visual-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideUp 0.4s ease;
+}
+
+.empty-results-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.result-card {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.result-header-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.cuotas-comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.cuota-card {
+    background: linear-gradient(135deg, var(--surface), rgba(30, 41, 59, 1));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s ease;
+}
+
+.cuota-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+.cuota-card.highlight {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), var(--surface));
+}
+
+.cuota-monto {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.cuota-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .reports-filters {
