@@ -195,11 +195,18 @@ function generarSimulacion() {
     const errorMsg = document.getElementById('error-msg');
     const resultado = document.getElementById('resultado');
 
+    const telefonoCliente = document.getElementById('telefono-cliente').value.trim();
+
     errorMsg.innerText = '';
     resultado.value = '';
 
     if (!proyectoSeleccionado || !numParcela) {
         errorMsg.innerText = 'Por favor, selecciona un proyecto y una parcela.';
+        return;
+    }
+
+    if (!telefonoCliente) {
+        errorMsg.innerText = 'El teléfono del cliente es obligatorio para generar la cotización.';
         return;
     }
 
@@ -257,17 +264,27 @@ function generarSimulacion() {
 
     let cuotasTexto = "";
     const saldoParaFinanciar = precioNum - pieFinalNum;
+    const opcionesCuotasCalculadas = [];
 
     for (const opt of opcionesCuotas) {
         let cNum = opt.m;
         let esSinInteres = opt.uf || cNum <= maxSinInteres;
         let valorCuotaMath = esSinInteres ? (saldoParaFinanciar / cNum) : calcularCuotaNormal(saldoParaFinanciar, cNum, getTasaInteres(proyectoSeleccionado));
         let label = esSinInteres ? "(UF)" : "";
-        cuotasTexto += `• ${cNum} cuotas de $${formatMoney(valorCuotaMath)} ${label}\n`;
+
+        const valorFormateado = formatMoney(valorCuotaMath);
+        cuotasTexto += `• ${cNum} cuotas de $${valorFormateado} ${label}\n`;
+
+        opcionesCuotasCalculadas.push({
+            meses: cNum,
+            valor: valorFormateado,
+            uf: opt.uf,
+            sinInteres: esSinInteres
+        });
     }
 
-    const texto = `*${proyectoSeleccionado}* – Parcela ${parcelaKey}\n📐 ${p.m2} m²\n💰 Valor Lista: $${p.precio}\n💵 Pago Contado: $${precioFinalContado}\n\nPie: $${pieFinal}\n\nSaldo financiado:\n${cuotasTexto.trim()}`;
-    resultado.value = texto;
+    const textoResultado = `*${proyectoSeleccionado}* – Parcela ${parcelaKey}\n📐 ${p.m2} m²\n💰 Valor Lista: $${p.precio}\n💵 Pago Contado: $${precioFinalContado}\n\nPie: $${pieFinal}\n\nSaldo financiado:\n${cuotasTexto.trim()}`;
+    resultado.value = textoResultado;
 
     // Renderizar Dashboard Visual
     renderVisualResults({
@@ -277,39 +294,51 @@ function generarSimulacion() {
         precio: p.precio,
         contado: precioFinalContado,
         pie: pieFinal,
-        cuotas: opcionesCuotas.map(o => {
-            let esSinInteres = o.uf || o.m <= maxSinInteres;
-            let v = esSinInteres ? (saldoParaFinanciar / o.m) : calcularCuotaNormal(saldoParaFinanciar, o.m, getTasaInteres(proyectoSeleccionado));
-            return { meses: o.m, valor: formatMoney(v), uf: o.uf, sinInteres: esSinInteres };
-        })
+        cuotas: opcionesCuotasCalculadas
     });
 
+    const nombreAsesor = document.getElementById('nombre-asesor').value.trim();
+    const nombreCliente = document.getElementById('nombre-cliente').value.trim();
+
     lastSimulationData = {
+        created_at: new Date().toISOString(),
         user_type: currentUserType,
+        asesor_name: nombreAsesor || currentFullAsesorName || 'Sin Nombre',
+        client_name: nombreCliente || 'Cliente Genérico',
+        client_phone: telefonoCliente,
         proyecto: proyectoSeleccionado,
         parcela: parcelaKey,
         m2: p.m2,
         precio_lista: p.precio,
         precio_contado: precioFinalContado,
         pie: pieFinal,
-        cuotas_detalle: opcionesCuotas,
-        total_quote: p.precio
+        cuotas_detalle: JSON.stringify(opcionesCuotasCalculadas)
     };
 
     document.getElementById('btn-pdf').style.display = 'block';
+
+    // Guardar automáticamente en el historial de reportes
+    registrarCotizacion(lastSimulationData);
 }
 
 // --- Lógica Administrativa ---
 
 function openAdmin() {
-    document.getElementById('adminOverlay').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    document.getElementById('simulator-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'block';
+    document.getElementById('btn-goto-simulator').style.display = 'flex';
+    document.getElementById('btn-admin-nav-toggle').style.display = 'none';
+    document.getElementById('main-header-title').innerHTML = '<i class="fa-solid fa-gear"></i> Configuraciones del Sistema';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function closeAdmin(e) {
-    if (e && e.target !== document.getElementById('adminOverlay')) return;
-    document.getElementById('adminOverlay').classList.remove('active');
-    document.body.style.overflow = '';
+function goToSimulator() {
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('simulator-view').style.display = 'block';
+    document.getElementById('btn-goto-simulator').style.display = 'none';
+    document.getElementById('btn-admin-nav-toggle').style.display = 'flex';
+    document.getElementById('main-header-title').innerHTML = '<i class="fa-solid fa-chart-line"></i> Centro de Gestión';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function loadAdminParcelas() {
@@ -464,6 +493,65 @@ function saveAdminData() {
     }, 300);
 }
 
+async function applyBulkProjectUpdate() {
+    const proj = document.getElementById('admin-proyecto').value;
+    const variationInput = document.getElementById('admin-bulk-variation').value.trim();
+
+    if (!proj) {
+        alert("Por favor, selecciona un proyecto primero.");
+        return;
+    }
+
+    const isNeg = variationInput.startsWith('-');
+    const variation = (isNeg ? -1 : 1) * (parseInt(variationInput.replace(/[^0-9]/g, '')) || 0);
+
+    if (variation === 0) {
+        alert("Por favor, ingresa una variación válida.");
+        return;
+    }
+
+    if (!confirm(`¿Estás seguro de aplicar una variación de $${variation.toLocaleString('es-CL')} a TODAS las parcelas de "${proj}"?`)) {
+        return;
+    }
+
+    const parcelas = db[proj];
+    const payloadArray = [];
+    const timestamp = new Date().toISOString();
+
+    const parseMoney = (str) => parseInt(String(str).replace(/[^0-9]/g, ''), 10);
+    const formatMoney = (num) => Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    for (const id in parcelas) {
+        const data = parcelas[id];
+        const currentPrecio = parseMoney(data.precio);
+        const newPrecioNum = currentPrecio + variation;
+        const newPrecioText = formatMoney(newPrecioNum);
+
+        payloadArray.push({
+            proyecto: proj,
+            parcela: id,
+            precio: newPrecioText,
+            pie: data.pie,
+            cuotas: data.cuotas,
+            updated_at: timestamp
+        });
+    }
+
+    const success = await saveBulkOverridesSupabase(payloadArray);
+    if (success) {
+        // Actualizar base de datos local
+        payloadArray.forEach(p => {
+            db[proj][p.parcela].precio = p.precio;
+        });
+
+        // Refrescar vista si hay algo seleccionado
+        loadAdminData();
+
+        alert(`¡Éxito! Se actualizaron ${payloadArray.length} parcelas.`);
+        document.getElementById('admin-bulk-variation').value = '';
+    }
+}
+
 // --- Helpers ---
 
 function formatCLPInput(input) {
@@ -475,11 +563,15 @@ function formatCLPInput(input) {
 
 function switchAdminTab(tab) {
     const isReportes = tab === 'reportes';
-    document.querySelector('.admin-modal').classList.toggle('wide', isReportes);
-    document.getElementById('tab-ajustes').classList.toggle('active', tab === 'ajustes');
-    document.getElementById('tab-reportes').classList.toggle('active', isReportes);
+
+    // Toggle side items
+    document.getElementById('side-tab-ajustes').classList.toggle('active', tab === 'ajustes');
+    document.getElementById('side-tab-reportes').classList.toggle('active', isReportes);
+
+    // Toggle content sections
     document.getElementById('view-ajustes').style.display = isReportes ? 'none' : 'block';
     document.getElementById('view-reportes').style.display = isReportes ? 'block' : 'none';
+
     if (isReportes) cargarReportes();
 }
 
@@ -541,11 +633,9 @@ function toggleTheme() {
 // Inicializar tema al cargar
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
-    const btn = document.getElementById('btn-theme-toggle');
 
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
 
         // Cargar logos oscuros al inicio
         const logos = document.querySelectorAll('.theme-logo');

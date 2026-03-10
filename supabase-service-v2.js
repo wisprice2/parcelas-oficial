@@ -56,19 +56,27 @@ async function applySupabaseOverrides() {
 
 // 2. Guardar overrides actuales en Supabase
 async function saveOverridesSupabase(proyecto, parcela, newData) {
+    const payload = {
+        proyecto: proyecto,
+        parcela: parcela,
+        precio: newData.precio,
+        pie: newData.pie,
+        cuotas: newData.cuotas,
+        updated_at: new Date().toISOString()
+    };
+    console.log("📤 Enviando a parcelas_overrides:", JSON.stringify(payload, null, 2));
+
     try {
         const { data, error } = await supabaseClient
             .from('parcelas_overrides')
-            .upsert({
-                proyecto: proyecto,
-                parcela: parcela,
-                precio: newData.precio,
-                pie: newData.pie,
-                cuotas: newData.cuotas,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'proyecto, parcela' });
+            .upsert(payload, { onConflict: 'proyecto,parcela' });
 
-        if (error) throw error;
+        if (error) {
+            console.error("❌ Error Supabase upsert:", error);
+            alert("Error al guardar: " + error.message);
+            return false;
+        }
+        console.log("✅ Override guardado exitosamente.");
         return true;
     } catch (e) {
         console.error("Error guardando en Supabase:", e);
@@ -77,12 +85,41 @@ async function saveOverridesSupabase(proyecto, parcela, newData) {
     }
 }
 
+// 2b. Guardar múltiples overrides (Bulk)
+async function saveBulkOverridesSupabase(payloadArray) {
+    console.log(`📤 Enviando ${payloadArray.length} registros a parcelas_overrides (Bulk)...`);
+    try {
+        const { data, error } = await supabaseClient
+            .from('parcelas_overrides')
+            .upsert(payloadArray, { onConflict: 'proyecto,parcela' });
+
+        if (error) {
+            console.error("❌ Error Supabase Bulk upsert:", error);
+            alert("Error al realizar ajuste masivo: " + error.message);
+            return false;
+        }
+        console.log("✅ Ajuste masivo guardado exitosamente.");
+        return true;
+    } catch (e) {
+        console.error("Error guardando bulk en Supabase:", e);
+        alert("Ocurrió un error en el ajuste masivo. Verifica la consola.");
+        return false;
+    }
+}
+
 // 3. Registrar cotización en el historial
 async function registrarCotizacion(datos) {
     try {
-        await supabaseClient.from('quotes_history').insert([datos]);
+        const { data, error } = await supabaseClient.from('quotes_history').insert([datos]);
+        if (error) {
+            console.error("Error Supabase al registrar cotización:", error);
+            alert("Error al guardar la cotización: " + error.message);
+        } else {
+            console.log("✅ Cotización registrada exitosamente en Supabase.");
+        }
     } catch (e) {
         console.error("Error guardando historial:", e);
+        alert("Error inesperado al guardar la cotización. Verifica la consola.");
     }
 }
 
@@ -161,14 +198,21 @@ async function cargarReportes() {
 
             tr.innerHTML = `
                 <td><input type="checkbox" class="report-check" value="${r.id}" onclick="updateMultiDeleteBtn()"></td>
-                <td>${fecha}</td>
-                <td><span class="badge-type badge-${r.user_type.toLowerCase()}">${r.user_type}</span><br>${r.asesor_name}</td>
-                <td>${r.client_name}</td>
-                <td><strong>${r.proyecto}</strong><br>Parcela ${r.parcela} (${r.m2} m²)</td>
-                <td>$${r.precio_lista}</td>
+                <td><span style="font-size:12px; opacity:0.8;">${fecha}</span></td>
                 <td>
-                    <button class="btn-mini-pdf" onclick="regenerarPDF_History('${r.id}')">
-                        <i class="fa-solid fa-file-pdf"></i> Generar
+                    <span class="badge-type badge-${r.user_type.toLowerCase()}">${r.user_type}</span>
+                    <div style="font-weight:600; margin-top:4px; font-size:13px;">${r.asesor_name}</div>
+                </td>
+                <td><span style="font-weight:600; color:var(--accent);">${r.client_name}</span></td>
+                <td><span style="font-family:monospace; font-size:13px; color:var(--text-muted);">${r.client_phone || 'N/A'}</span></td>
+                <td>
+                    <div style="font-weight:600; font-size:13px;">${r.proyecto}</div>
+                    <div style="font-size:12px; opacity:0.7;">Parcela ${r.parcela} (${r.m2} m²)</div>
+                </td>
+                <td style="font-weight:600; color:#16a34a;">$${r.precio_lista}</td>
+                <td style="text-align:center;">
+                    <button class="btn-mini-pdf" onclick="regenerarPDF_History('${r.id}')" title="Descargar PDF">
+                        <i class="fa-solid fa-file-pdf"></i>
                     </button>
                 </td>
                 <td style="text-align:center;">${deleteIcon}</td>
@@ -322,9 +366,11 @@ async function attemptLogin() {
             if (toggleBtn) toggleBtn.style.display = 'flex';
             closeAuthOverlay();
 
-            // Pre-fill asesor name
+            // Pre-fill asesor name - REMOVED per user request to leave it empty
+            /*
             const asesorInput = document.getElementById('nombre-asesor');
             if (asesorInput) asesorInput.value = currentFullAsesorName;
+            */
         }
 
     } catch (e) {
@@ -370,9 +416,11 @@ async function updatePassword() {
         document.getElementById('authOverlay').classList.remove('active');
         document.body.style.overflow = '';
 
-        // Pre-fill asesor name
+        // Pre-fill asesor name - REMOVED per user request to leave it empty
+        /*
         const asesorInput = document.getElementById('nombre-asesor');
         if (asesorInput) asesorInput.value = currentFullAsesorName;
+        */
 
     } catch (e) {
         console.error("Update Pass Error", e);
@@ -401,8 +449,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleBtn = document.getElementById('btn-admin-nav-toggle');
         if (toggleBtn) toggleBtn.style.display = 'flex';
 
+        /*
         const asesorInput = document.getElementById('nombre-asesor');
         if (asesorInput) asesorInput.value = currentFullAsesorName;
+        */
 
         closeAuthOverlay();
     }

@@ -28,7 +28,7 @@
             <div id="auth-welcome" class="auth-step active">
                 <div class="header" style="margin-bottom: 20px;">
                     <div class="logo" style="justify-content: center;">
-                        <img src="logo.png" alt="Soy Nativo" class="theme-logo" style="height: 45px; width: auto;">
+                        <img src="logo.png" alt="Soy Nativo" class="theme-logo" style="height: 65px; width: auto;">
                     </div>
                 </div>
                 <h3
@@ -105,242 +105,277 @@
 
     <!-- Menú de Administración Flotante -->
     <div class="admin-nav" style="gap: 12px; pointer-events: none;">
-        <button class="btn-admin-toggle" id="btn-theme-toggle" onclick="toggleTheme()" title="Cambiar Tema"
-            style="pointer-events: auto;">
-            <i class="fa-solid fa-moon"></i>
-        </button>
         <button class="btn-admin-toggle" id="btn-admin-nav-toggle" onclick="openAdmin()" title="Administrar Valores"
             style="display: none; pointer-events: auto;">
             <i class="fa-solid fa-gear"></i>
         </button>
     </div>
 
-    <!-- Modal de Administración -->
-    <div class="admin-modal-overlay" id="adminOverlay" onclick="closeAdmin(event)">
-        <div class="admin-modal" onclick="event.stopPropagation()">
-            <div class="admin-header">
-                <h3><i class="fa-solid fa-sliders"></i> Panel de Control</h3>
-                <button class="btn-close" onclick="closeAdmin()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+    <!-- El modal de administración ha sido reemplazado por una vista de Dashboard integrada -->
 
-            <div class="admin-nav-tabs">
-                <div class="admin-tab active" id="tab-ajustes" onclick="switchAdminTab('ajustes')">Ajustes de Valores
-                </div>
-                <div class="admin-tab" id="tab-reportes" onclick="switchAdminTab('reportes')">Reportes</div>
-            </div>
-
-            <div class="admin-body" id="view-ajustes">
-                <div class="admin-layout">
-                    <!-- Columna Izquierda: Selección -->
-                    <div class="admin-sidebar" id="admin-sidebar">
-                        <div class="form-group">
-                            <label for="admin-proyecto">Proyecto</label>
-                            <select id="admin-proyecto" onchange="loadAdminParcelas()">
-                                <option value="">Selecciona un proyecto...</option>
-                            </select>
-                        </div>
-
-                        <div id="admin-bulk-container" style="display: none;" class="bulk-update-box">
-                            <div class="bulk-title">
-                                <i class="fa-solid fa-layer-group"></i> Ajuste Masivo
-                            </div>
-                            <div class="form-group">
-                                <label>Variación Precio ($)</label>
-                                <input type="text" id="admin-bulk-variation" placeholder="Ej: 1.000.000">
-                            </div>
-                            <button onclick="applyBulkProjectUpdate()" class="btn-save btn-small"
-                                style="height: 40px; margin-top: 0;">
-                                <i class="fa-solid fa-check"></i> Aplicar a Todo
-                            </button>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="admin-parcela">Parcela / Lote</label>
-                            <select id="admin-parcela" onchange="loadAdminData()" disabled>
-                                <option value="">Primero selecciona un proyecto</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Columna Derecha: Editor -->
-                    <div class="admin-main-content">
-                        <div id="admin-data-container" style="display: none;">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <div class="input-info-note">
-                                        <i class="fa-solid fa-circle-info"></i> Al cambiar el valor, las cuotas se
-                                        recalculan automáticamente.
-                                    </div>
-                                    <label for="admin-precio">Valor ($)</label>
-                                    <input type="text" id="admin-precio" oninput="recalculateAdminInstallments()">
-                                </div>
-                                <div class="form-group">
-                                    <label for="admin-pie">Pie ($)</label>
-                                    <input type="text" id="admin-pie" oninput="recalculateAdminInstallments()">
-                                </div>
-                            </div>
-
-                            <div class="cuotas-editor-card">
-                                <div class="cuotas-header">
-                                    <i class="fa-solid fa-calculator"></i> Valores de Cuotas Mensuales ($)
-                                </div>
-                                <div id="admin-cuotas-list" class="cuotas-grid"></div>
-                            </div>
-
-                            <div class="admin-actions-footer">
-                                <button id="btn-save-admin" class="btn-save" onclick="saveAdminData()">
-                                    <div class="btn-content"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
-                                    </div>
-                                    <div class="loader">
-                                        <div class="spinner"></div>
-                                    </div>
-                                </button>
-                                <div class="reset-link" onclick="resetParcelaData()">
-                                    <i class="fa-solid fa-arrow-rotate-left"></i> Restablecer valores
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="admin-empty-state" class="empty-state">
-                            <i class="fa-solid fa-hand-pointer"
-                                style="font-size: 32px; margin-bottom: 16px; opacity: 0.5;"></i><br>
-                            Selecciona un proyecto y una parcela<br>para comenzar a editar.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="admin-body" id="view-reportes" style="display: none;">
-                <div class="reports-filters">
-                    <div class="form-group"><label>Usuario</label><input type="text" id="filter-user"
-                            oninput="cargarReportes()"></div>
-                    <div class="form-group">
-                        <label>Tipo</label>
-                        <select id="filter-type" onchange="cargarReportes()">
-                            <option value="">Todos</option>
-                            <option value="Interno">Interno</option>
-                            <option value="Partner">Partner</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Proyecto</label>
-                        <select id="filter-project" onchange="cargarReportes()">
-                            <option value="">Todos</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; gap:10px; align-items:flex-end;">
-                        <button class="btn-small" onclick="cargarReportes()">Filtrar</button>
-                        <button class="btn-small" onclick="exportarReportesCSV()"
-                            style="background:#16a34a; border-color:#16a34a;">
-                            <i class="fa-solid fa-file-export"></i> Exportar
-                        </button>
-                        <button class="btn-small" onclick="eliminarSeleccionados()"
-                            style="background:#ef4444; border-color:#ef4444; display: none;" id="btn-delete-multi">
-                            <i class="fa-solid fa-trash-can"></i> Eliminar Seleccionados
-                        </button>
-                    </div>
-                </div>
-
-                <div class="reports-table-container">
-                    <table class="reports-table">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="check-all-reports" onclick="toggleAllReports(this)"></th>
-                                <th>Fecha</th>
-                                <th>Usuario</th>
-                                <th>Cliente</th>
-                                <th>Proyecto / Parcela</th>
-                                <th>Valor Total</th>
-                                <th>PDF</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reports-tbody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="dashboard-wrapper">
         <div class="dashboard-header">
             <div class="logo">
                 <img src="logo.png" alt="Soy Nativo" id="header-logo" class="theme-logo">
             </div>
-            <div class="header-title"><i class="fa-solid fa-chart-line"></i> Centro de Gestión
+            <div class="header-title" id="main-header-title">
+                <i class="fa-solid fa-chart-line"></i> Centro de Gestión
+            </div>
+            <div class="header-actions">
+                <button id="btn-goto-simulator" class="btn-primary-outline" onclick="goToSimulator()"
+                    style="display: none; margin-right: 15px; height: 40px; border-radius: 10px; padding: 0 20px; font-weight: 600;">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Simulador
+                </button>
             </div>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="panel form-panel">
-                <h2 style="text-align: left; margin-bottom: 24px; font-size: 18px; display: flex; align-items: center;">
-                    <i class="fa-regular fa-clipboard" style="margin-right: 8px; color: var(--accent);"></i> Datos de
-                    Simulación
-                </h2>
+        <div id="simulator-view" class="dashboard-view-container">
+            <div class="dashboard-grid">
+                <div class="panel form-panel">
+                    <h2
+                        style="text-align: left; margin-bottom: 24px; font-size: 18px; display: flex; align-items: center;">
+                        <i class="fa-regular fa-clipboard" style="margin-right: 8px; color: var(--accent);"></i> Datos
+                        de
+                        Simulación
+                    </h2>
 
-                <div class="form-group">
-                    <label for="proyecto">Selecciona el Proyecto</label>
-                    <select id="proyecto" onchange="cargarParcelasSimulador(); mostrarOpcionesCuotas()"></select>
-                </div>
+                    <div class="form-group">
+                        <label for="proyecto">Selecciona el Proyecto</label>
+                        <select id="proyecto" onchange="cargarParcelasSimulador(); mostrarOpcionesCuotas()"></select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="parcela">Identificador de la Parcela</label>
-                    <select id="parcela" onchange="mostrarOpcionesCuotas()"></select>
-                </div>
+                    <div class="form-group">
+                        <label for="parcela">Identificador de la Parcela</label>
+                        <select id="parcela" onchange="mostrarOpcionesCuotas()"></select>
+                    </div>
 
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Nombre del Cliente</label><input type="text" id="nombre-cliente"></div>
-                    <div style="flex: 1;"><label>Nombre del Asesor</label><input type="text" id="nombre-asesor"></div>
-                </div>
+                    <div class="form-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 140px;"><label>Nombre del Cliente</label><input type="text"
+                                id="nombre-cliente">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;"><label>Teléfono del Cliente</label><input type="text"
+                                id="telefono-cliente">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;"><label>Nombre del Asesor</label><input type="text"
+                                id="nombre-asesor">
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label>Pie Personalizado</label>
-                    <input type="text" id="custom-pie"
-                        onchange="if(document.getElementById('resultado').value !== '') generarSimulacion()">
-                </div>
+                    <div class="form-group">
+                        <label>Pie Personalizado</label>
+                        <input type="text" id="custom-pie"
+                            onchange="if(document.getElementById('resultado').value !== '') generarSimulacion()">
+                    </div>
 
-                <div class="form-group">
-                    <label>Pago Contado Personalizado</label>
-                    <input type="text" id="custom-contado"
-                        onchange="if(document.getElementById('resultado').value !== '') generarSimulacion()">
-                </div>
+                    <div class="form-group">
+                        <label>Pago Contado Personalizado</label>
+                        <input type="text" id="custom-contado"
+                            onchange="if(document.getElementById('resultado').value !== '') generarSimulacion()">
+                    </div>
 
-                <div class="form-group">
-                    <label>Cuotas a Cotizar (Hasta 3)</label>
-                    <div id="cuotas-container" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
-                </div>
+                    <div class="form-group">
+                        <label>Cuotas a Cotizar (Hasta 3)</label>
+                        <div id="cuotas-container" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
+                    </div>
 
-                <div id="error-msg" class="error" style="margin-top: 10px; min-height: 20px;"></div>
-                <div class="panel-actions-container">
-                    <button class="btn-save" onclick="generarSimulacion()" style="width: 100%;">
-                        <div class="btn-content"><i class="fa-solid fa-play"></i> Generar Cotización</div>
-                    </button>
-                </div>
-            </div>
-
-            <div class="panel results-panel">
-                <h2 style="text-align: left; margin-bottom: 24px; font-size: 18px; display: flex; align-items: center;">
-                    <i class="fa-solid fa-chart-pie" style="margin-right: 8px; color: var(--accent);"></i>
-                    Resumen de Cotización
-                </h2>
-
-                <!-- Dashboard de Resultados Visual -->
-                <div id="visual-results" class="visual-dashboard">
-                    <div class="empty-results-state">
-                        <i class="fa-solid fa-calculator"
-                            style="font-size: 48px; opacity: 0.1; margin-bottom: 16px;"></i>
-                        <p>Completa los datos y haz clic en "Generar Cotización" para ver el dashboard.</p>
+                    <div id="error-msg" class="error" style="margin-top: 10px; min-height: 20px;"></div>
+                    <div class="panel-actions-container">
+                        <button class="btn-save" onclick="generarSimulacion()" style="width: 100%;">
+                            <div class="btn-content"><i class="fa-solid fa-play"></i> Generar Cotización</div>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Resumen en Texto (Oculto por defecto, usado para el Portapapeles) -->
-                <textarea id="resultado" readonly style="display: none;"></textarea>
+                <div class="panel results-panel">
+                    <h2
+                        style="text-align: left; margin-bottom: 24px; font-size: 18px; display: flex; align-items: center;">
+                        <i class="fa-solid fa-chart-pie" style="margin-right: 8px; color: var(--accent);"></i>
+                        Resumen de Cotización
+                    </h2>
 
-                <div class="panel-actions-container">
-                    <button class="btn-secondary" onclick="descargarPDF()" style="width: 100%;">
-                        <i class="fa-solid fa-file-pdf"></i> Descargar PDF
-                    </button>
+                    <!-- Dashboard de Resultados Visual -->
+                    <div id="visual-results" class="visual-dashboard">
+                        <div class="empty-results-state">
+                            <i class="fa-solid fa-calculator"
+                                style="font-size: 48px; opacity: 0.1; margin-bottom: 16px;"></i>
+                            <p>Completa los datos y haz clic en "Generar Cotización" para ver el dashboard.</p>
+                        </div>
+                    </div>
+
+                    <!-- Resumen en Texto (Oculto por defecto, usado para el Portapapeles) -->
+                    <textarea id="resultado" readonly style="display: none;"></textarea>
+
+                    <div class="panel-actions-container">
+                        <button class="btn-secondary" onclick="descargarPDF()" style="width: 100%;">
+                            <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+                        </button>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Nueva Vista de Configuraciones (Dashboard Independiente) -->
+        <div id="admin-view" class="dashboard-view-container" style="display: none;">
+            <div class="admin-dashboard-card">
+                <aside class="admin-sidebar-nav">
+                    <div class="sidebar-label">MENÚ DE CONTROL</div>
+                    <nav>
+                        <div class="sidebar-item active" id="side-tab-ajustes" onclick="switchAdminTab('ajustes')">
+                            <i class="fa-solid fa-sliders"></i> Ajustes de Valores
+                        </div>
+                        <div class="sidebar-item" id="side-tab-reportes" onclick="switchAdminTab('reportes')">
+                            <i class="fa-solid fa-chart-line"></i> Historial de Reportes
+                        </div>
+                    </nav>
+                </aside>
+
+                <main class="admin-main-panel">
+                    <!-- Vista Ajustes -->
+                    <div id="view-ajustes" class="admin-content-section">
+                        <div class="section-header">
+                            <h2>Ajustes de Valores</h2>
+                            <p>Modifica precios y pies por proyecto y parcela.</p>
+                        </div>
+
+                        <div class="admin-layout">
+                            <div class="admin-sidebar" id="admin-sidebar">
+                                <div class="form-group">
+                                    <label for="admin-proyecto">Proyecto</label>
+                                    <select id="admin-proyecto" onchange="loadAdminParcelas()">
+                                        <option value="">Selecciona un proyecto...</option>
+                                    </select>
+                                </div>
+
+                                <div id="admin-bulk-container" style="display: none;" class="bulk-update-box">
+                                    <div class="bulk-title">
+                                        <i class="fa-solid fa-layer-group"></i> Ajuste Masivo
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Variación Precio ($)</label>
+                                        <input type="text" id="admin-bulk-variation" placeholder="Ej: 1.000.000">
+                                    </div>
+                                    <button onclick="applyBulkProjectUpdate()" class="btn-save btn-small"
+                                        style="height: 40px; margin-top: 0;">
+                                        <i class="fa-solid fa-check"></i> Aplicar a Todo
+                                    </button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="admin-parcela">Parcela / Lote</label>
+                                    <select id="admin-parcela" onchange="loadAdminData()" disabled>
+                                        <option value="">Primero selecciona un proyecto</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="admin-main-content">
+                                <div id="admin-data-container" style="display: none;">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <div class="input-info-note">
+                                                <i class="fa-solid fa-circle-info"></i> Al cambiar el valor, las cuotas
+                                                se recalculan automáticamente.
+                                            </div>
+                                            <label for="admin-precio">Valor ($)</label>
+                                            <input type="text" id="admin-precio"
+                                                oninput="recalculateAdminInstallments()">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="admin-pie">Pie ($)</label>
+                                            <input type="text" id="admin-pie" oninput="recalculateAdminInstallments()">
+                                        </div>
+                                    </div>
+
+                                    <div class="cuotas-editor-card">
+                                        <div class="cuotas-header">
+                                            <i class="fa-solid fa-calculator"></i> Valores de Cuotas Mensuales ($)
+                                        </div>
+                                        <div id="admin-cuotas-list" class="cuotas-grid"></div>
+                                    </div>
+
+                                    <div class="admin-actions-footer">
+                                        <button id="btn-save-admin" class="btn-save" onclick="saveAdminData()">
+                                            <div class="btn-content"><i class="fa-solid fa-floppy-disk"></i> Guardar
+                                                Cambios</div>
+                                            <div class="loader">
+                                                <div class="spinner"></div>
+                                            </div>
+                                        </button>
+                                        <div class="reset-link" onclick="resetParcelaData()">
+                                            <i class="fa-solid fa-arrow-rotate-left"></i> Restablecer valores
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="admin-empty-state" class="empty-state">
+                                    <i class="fa-solid fa-hand-pointer"
+                                        style="font-size: 32px; margin-bottom: 16px; opacity: 0.5;"></i><br>
+                                    Selecciona un proyecto y una parcela<br>para comenzar a editar.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vista Reportes -->
+                    <div id="view-reportes" class="admin-content-section" style="display: none;">
+                        <div class="section-header">
+                            <h2>Historial de Reportes</h2>
+                            <p>Gestiona y descarga los reportes generados por los usuarios.</p>
+                        </div>
+
+                        <div class="reports-filters">
+                            <div class="form-group"><label>Usuario</label><input type="text" id="filter-user"
+                                    oninput="cargarReportes()"></div>
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="filter-type" onchange="cargarReportes()">
+                                    <option value="">Todos</option>
+                                    <option value="Interno">Interno</option>
+                                    <option value="Partner">Partner</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Proyecto</label>
+                                <select id="filter-project" onchange="cargarReportes()">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:flex-end;">
+                                <button class="btn-small" onclick="cargarReportes()">Filtrar</button>
+                                <button class="btn-small" onclick="exportarReportesCSV()"
+                                    style="background:#16a34a; border-color:#16a34a;">
+                                    <i class="fa-solid fa-file-export"></i> Exportar
+                                </button>
+                                <button class="btn-small" onclick="eliminarSeleccionados()"
+                                    style="background:#ef4444; border-color:#ef4444; display: none;"
+                                    id="btn-delete-multi">
+                                    <i class="fa-solid fa-trash-can"></i> Eliminar Seleccionados
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="reports-table-container">
+                            <table class="reports-table">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="check-all-reports"
+                                                onclick="toggleAllReports(this)"></th>
+                                        <th>Fecha</th>
+                                        <th>Tipo / Asesor</th>
+                                        <th>Cliente</th>
+                                        <th>Teléfono</th>
+                                        <th>Proyecto / Parcela</th>
+                                        <th>Valor Venta</th>
+                                        <th>PDF</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
     </div>

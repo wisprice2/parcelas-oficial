@@ -20,6 +20,7 @@ async function regenerarPDF_History(quoteId) {
             parc: q.parcela,
             cliente: q.client_name,
             asesor: q.asesor_name,
+            telefono: q.client_phone,
             pie: q.pie,
             contado: q.precio_contado,
             cuotas_detalle: q.cuotas_detalle
@@ -37,11 +38,17 @@ async function descargarPDF(dataOverride = null) {
     // Validación obligatoria solo al generar PDF
     if (!dataOverride) {
         const clientNameInput = document.getElementById('nombre-cliente');
+        const clientPhoneInput = document.getElementById('telefono-cliente');
         const advisorNameInput = document.getElementById('nombre-asesor');
 
         if (!clientNameInput.value.trim()) {
             alert("Para generar el PDF es obligatorio ingresar el Nombre del Cliente.");
             clientNameInput.focus();
+            return;
+        }
+        if (!clientPhoneInput.value.trim()) {
+            alert("Para generar el PDF es obligatorio ingresar el Teléfono del Cliente.");
+            clientPhoneInput.focus();
             return;
         }
         if (!advisorNameInput.value.trim()) {
@@ -77,6 +84,7 @@ async function descargarPDF(dataOverride = null) {
 
         const fechaStr = new Date().toLocaleDateString('es-CL');
         const nombreCliente = dataOverride ? dataOverride.cliente : (document.getElementById('nombre-cliente').value.trim() || '___________________');
+        const telefonoCliente = dataOverride ? dataOverride.telefono : (document.getElementById('telefono-cliente').value.trim() || '___________________');
 
         let asesorInput = dataOverride ? dataOverride.asesor : document.getElementById('nombre-asesor').value.trim();
         if (!asesorInput && currentAuthUser) {
@@ -380,7 +388,7 @@ async function exportarReportesCSV() {
         return alert("No hay datos para exportar.");
     }
 
-    const headers = ["Fecha", "Tipo Usuario", "Asesor", "Cliente", "Proyecto", "Parcela", "M2", "Precio Lista", "Precio Pie"];
+    const headers = ["Fecha", "Tipo Usuario", "Asesor", "Cliente", "Teléfono", "Proyecto", "Parcela", "M2", "Precio Lista", "Precio Pie"];
     let csvContent = "\ufeff" + headers.join(";") + "\n";
 
     window.lastReportData.forEach(r => {
@@ -390,6 +398,7 @@ async function exportarReportesCSV() {
             r.user_type,
             r.asesor_name,
             r.client_name,
+            r.client_phone || 'N/A',
             r.proyecto,
             r.parcela,
             r.m2,
