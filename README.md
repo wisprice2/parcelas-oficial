@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Soy Nativo - Centro de Gestión y Simulación (Migración Appwrite)
 
-## Getting Started
+Este proyecto es un simulador de cotizaciones para parcelas, migrado exitosamente de Supabase a **Appwrite**. Permite a asesores y partners generar cotizaciones personalizadas, gestionar precios (overrides) y mantener un historial de ventas.
 
-First, run the development server:
+## 🚀 Cambios Realizados en la Migración
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1.  **Eliminación de Supabase:** Se eliminó la dependencia de `@supabase/supabase-js` y se reemplazó por el SDK de Appwrite.
+2.  **Nuevo Backend:** Se configuró una base de datos en Appwrite (`cotizador_db`) con colecciones optimizadas:
+    *   `parcelas_overrides`: Gestión dinámica de precios.
+    *   `quotes_history`: Historial de cotizaciones generadas.
+    *   `app_users`: Control de acceso para personal interno.
+3.  **Adaptación de Código:**
+    *   `supabase-service-v2.js` fue reemplazado por `appwrite-service.js`.
+    *   `pdf-service.js` fue actualizado a `pdf-service-appwrite.js` para integrarse con el nuevo flujo de datos.
+    *   `index.html` actualizado para cargar el SDK de Appwrite y los nuevos módulos.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Requisitos e Instalación
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+El proyecto es una aplicación estática (SPA). Para ejecutarlo localmente:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1.  Clona este repositorio.
+2.  Asegúrate de tener las variables de entorno configuradas en `appwrite-service.js` (Endpoint, Project ID, API Key).
+3.  Abre `index.html` en cualquier navegador moderno o usa un servidor local (ej. Live Server en VS Code).
 
-## Learn More
+### Configuración de Appwrite
 
-To learn more about Next.js, take a look at the following resources:
+Si deseas replicar el entorno en un nuevo proyecto de Appwrite:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  Crea una base de datos con ID `cotizador_db`.
+2.  Crea las siguientes colecciones con sus respectivos atributos (todos como **String** para máxima compatibilidad con el cálculo local):
+    *   **parcelas_overrides**: `proyecto`, `parcela`, `precio`, `pie`, `cuotas`, `updated_at`.
+    *   **quotes_history**: `user_type`, `asesor_name`, `client_name`, `client_phone`, `proyecto`, `parcela`, `m2`, `precio_lista`, `precio_contado`, `pie`, `cuotas_detalle`, `total_quote`, `pdf_url`, `created_at`.
+    *   **app_users**: `username`, `password`, `role`, `needs_change` (boolean).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Estructura del Proyecto
 
-## Deploy on Vercel
+*   `index.html`: Punto de entrada y estructura de la UI.
+*   `appwrite-service.js`: Capa de integración con Appwrite (CRUD, Auth).
+*   `app.js`: Lógica principal del simulador y administración.
+*   `database.js`: Catálogo estático de parcelas y proyectos.
+*   `pdf-service-appwrite.js`: Generación de reportes PDF.
+*   `styles-v2.css`: Estilos visuales del dashboard.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔐 Seguridad
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Actualmente, el proyecto utiliza una API Key con permisos abiertos para facilitar la transición. En un entorno de producción, se recomienda:
+1.  Utilizar el sistema de autenticación nativo de Appwrite (`Account`).
+2.  Restringir los permisos de las colecciones a usuarios autenticados.
+3.  Implementar hashing de contraseñas para la colección `app_users`.
+
+---
+Desarrollado para **Soy Nativo**.
+Migración realizada por **Manus AI**.
